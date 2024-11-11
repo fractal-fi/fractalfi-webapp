@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { motion, MotionValue, useMotionValue, useTransform } from 'framer-motion'
 
-export const BackgroundPattern = () => {
+export const BackgroundPattern: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
