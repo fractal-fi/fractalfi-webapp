@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
-import { Bitcoin, DollarSign, Info } from 'lucide-react'
+import { Bitcoin, DollarSign, Info, TrendingUp } from 'lucide-react'
+import { BackgroundPattern } from '@/components'
 
 const MintRedeem: React.FC = () => {
   const redeemData = [
@@ -52,8 +53,9 @@ const MintRedeem: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
+      <BackgroundPattern />
       <motion.h1 
-        className="text-4xl md:text-4xl font-bold tracking-tighter font-['Montserrat',sans-serif] mb-4 text-center text-white bg-gradient-to-r from-[#f39800] to-[#f39800]/70 bg-clip-text text-transparent" 
+        className="text-5xl md:text-6xl font-bold tracking-tighter font-['Montserrat',sans-serif] mb-4 text-center text-white bg-gradient-to-r from-[#f39800] to-[#f39800]/70 bg-clip-text text-transparent" 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -67,26 +69,59 @@ const MintRedeem: React.FC = () => {
         transition={{ delay: 0.5, duration: 0.5 }}
       />
 
-      <div className="flex flex-col md:flex-row gap-8 bg-gray-900/50 backdrop-blur-md p-8 rounded-2xl shadow-2xl">
+      <div className="flex flex-col md:flex-row gap-8">
         {/* Left column: General information */}
         <div className="md:w-1/3 space-y-6">
-          <div className="bg-gray-800/50 p-6 rounded-xl">
-            <h3 className="text-xl font-semibold text-white mb-4">Balances</h3>
-            <p className="text-3xl font-bold text-[#f39800] flex items-center">
-              <Bitcoin className="mr-2" />
-              {maxBtcBalance} BTC
-            </p>
+          <motion.div 
+            className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h3 className="text-2xl font-semibold text-white mb-6">Your Balances</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Bitcoin className="text-[#f39800] h-8 w-8" />
+                  <span className="text-lg text-gray-300">Bitcoin</span>
+                </div>
+                <span className="text-2xl font-bold text-white">{maxBtcBalance} BTC</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <DollarSign className="text-[#f39800] h-8 w-8" />
+                  <span className="text-lg text-gray-300">fUSD</span>
+                </div>
+                <span className="text-2xl font-bold text-white">{userFUsdBalance.toLocaleString()} fUSD</span>
+              </div>
+              
+            </div>
+            
+          </motion.div>
 
-            <p className="text-3xl font-bold text-[#f39800] flex items-center mt-2">
-              <DollarSign className="mr-2" />
-              {userFUsdBalance.toLocaleString()} fUSD
-            </p>
-          </div>
-
-          <div className="bg-gray-800/50 p-6 rounded-xl">
-            <h3 className="text-xl font-semibold text-white mb-4">Current Exchange Rate</h3>
-            <p className="text-2xl font-bold text-[#f39800]">1 BTC = ${exchangeRate.toLocaleString()} USD</p>
-          </div>
+          <motion.div 
+            className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 overflow-hidden relative group"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <h3 className="text-2xl font-semibold text-white mb-4">Exchange Rate</h3>
+            <div className="flex items-center space-x-4">
+              <div className="bg-[#f39800]/20 p-3 rounded-full">
+                <TrendingUp className="text-[#f39800] h-8 w-8" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400">Current Rate</p>
+                <p className="text-3xl font-bold text-white">1 BTC = ${exchangeRate.toLocaleString()} USD</p>
+              </div>
+            </div>
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-r from-[#f39800]/0 via-[#f39800]/30 to-[#f39800]/0"
+              initial={{ x: '-100%' }}
+              animate={{ x: '100%' }}
+              transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+            />
+          </motion.div>
         </div>
 
         {/* Right column: Tabs and slider */}
@@ -96,7 +131,7 @@ const MintRedeem: React.FC = () => {
               <TabsTrigger value="mint" className="data-[state=active]:bg-[#f39800] data-[state=active]:text-black">Mint fUSD</TabsTrigger>
               <TabsTrigger value="redeem" className="data-[state=active]:bg-[#f39800] data-[state=active]:text-black">Redeem BTC</TabsTrigger>
             </TabsList>
-            <TabsContent value="mint" className="bg-gray-800/30 backdrop-blur-md p-6 rounded-b-xl">
+            <TabsContent value="mint" className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-b-xl shadow-lg border border-gray-700">
               <motion.div 
                 className="space-y-6"
                 initial={{ opacity: 0 }}
@@ -104,7 +139,7 @@ const MintRedeem: React.FC = () => {
                 transition={{ duration: 0.5 }}
               >
                 <div>
-                  <h3 className="text-lg font-semibold mb-4 text-white">You Spend (BTC)</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-white">You Spend (BTC)</h3>
                   <input
                     type="range"
                     min={0.0001}
@@ -125,7 +160,7 @@ const MintRedeem: React.FC = () => {
                     max={maxBtcBalance}
                     step={0.0001}
                     className={cn(
-                      "bg-gray-700/50 text-white border-gray-600 text-lg",
+                      "bg-gray-800/50 text-white border-gray-600 text-lg",
                       !isValidAmount && "border-red-500"
                     )}
                   />
@@ -143,16 +178,16 @@ const MintRedeem: React.FC = () => {
                   </AnimatePresence>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold mb-2 text-white">You'll Receive (fUSD)</h3>
+                  <h3 className="text-xl font-semibold mb-2 text-white">You'll Receive (fUSD)</h3>
                   <Input
                     type="number"
                     value={fUsdAmount.toFixed(2)}
                     readOnly
-                    className="bg-gray-700/50 text-white border-gray-600 text-lg"
+                    className="bg-gray-800/50 text-white border-gray-600 text-lg"
                   />
                 </div>
                 <Button 
-                  className="w-full bg-gradient-to-r from-[#f39800] to-[#f39800]/80 hover:from-[#f39800]/90 hover:to-[#f39800]/70 text-black text-lg font-semibold py-6 rounded-xl transition-all duration-300 transform hover:scale-105"
+                  className="w-full bg-gradient-to-r from-[#f39800] to-[#f39800]/80 hover:from-[#f39800]/90 hover:to-[#f39800]/70 text-black text-lg font-semibold py-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
                   onClick={handleMint}
                   disabled={!isValidAmount || isLoading}
                 >
@@ -172,14 +207,14 @@ const MintRedeem: React.FC = () => {
                   )}
                 </Button>
                 <Alert variant="default" className="bg-gray-800/50 border-[#f39800]/50">
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
+                  <Info className="h-4 w-4 text-[#f39800]" />
+                  <AlertDescription className="text-gray-300">
                     {collateralizationRatio * 100}% of locked assets will be minted as fUSD. This ensures the stability and security of the FractalFi ecosystem.
                   </AlertDescription>
                 </Alert>
               </motion.div>
             </TabsContent>
-            <TabsContent value="redeem" className="bg-gray-800/30 backdrop-blur-md p-6 rounded-b-xl">
+            <TabsContent value="redeem" className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-b-xl shadow-lg border border-gray-700">
               <motion.div
                 className="space-y-6"
                 initial={{ opacity: 0 }}
@@ -188,7 +223,7 @@ const MintRedeem: React.FC = () => {
               >
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left text-gray-300">
-                    <thead className="text-xs uppercase bg-gray-700/50 text-gray-400">
+                    <thead className="text-xs uppercase bg-gray-800/50 text-gray-400">
                       <tr>
                         <th scope="col" className="px-6 py-3 rounded-tl-lg">Ticket #</th>
                         <th scope="col" className="px-6 py-3">Redeemable BTC</th>
@@ -209,7 +244,7 @@ const MintRedeem: React.FC = () => {
                           <td className="px-6 py-4">
                             <Button
                               onClick={() => handleRedeem(item.ticket)}
-                              className="w-full bg-gradient-to-r from-[#f39800] to-[#f39800]/80 hover:from-[#f39800]/90 hover:to-[#f39800]/70 text-black font-semibold py-2 px-4 rounded transition-all duration-300 transform hover:scale-105"
+                              className="w-full bg-gradient-to-r from-[#f39800] to-[#f39800]/80 hover:from-[#f39800]/90 hover:to-[#f39800]/70 text-black font-semibold py-2 px-4 rounded transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
                             >
                               Redeem BTC
                             </Button>

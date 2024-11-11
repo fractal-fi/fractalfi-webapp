@@ -27,7 +27,7 @@ const Header: React.FC = () => {
   ]
 
   return (
-    <header className="container mx-auto px-4 py-6 flex items-center">
+    <header className="container mx-auto px-4 py-6 flex items-center z-10">
       <Link to="/" className="text-2xl font-bold text-[#f39800] mr-8">
         FractalFi
       </Link>
