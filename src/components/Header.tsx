@@ -22,8 +22,6 @@ const Header: React.FC = () => {
 
   const menuItems = [
     { name: 'Mint', path: RoutesEnum.MintRedeem },
-    { name: 'Borrow', path: RoutesEnum.Borrow },
-    { name: 'Lending', path: RoutesEnum.Lend },
     { name: 'Auctions', path: RoutesEnum.Auction }
   ]
 

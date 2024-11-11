@@ -12,8 +12,6 @@ function App() {
           <Route path={RoutesEnum.Landing} element={<LandingPage />} />
           <Route path={RoutesEnum.MintRedeem} element={<MintRedeem />} />
           <Route path={RoutesEnum.Auction} element={<Auction />} />
-          <Route path={RoutesEnum.Lend} element={<Lend />} />
-          <Route path={RoutesEnum.Borrow} element={<Borrow />} />
         </Routes>
       </div>
     </Router>
