@@ -82,3 +82,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+.custom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #f39800;
+  cursor: pointer;
+  border: 2px solid white;
+}
+.custom-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #f39800;
+  cursor: pointer;
+  border: 2px solid white;
+}

@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { LandingPage } from './pages'
+import { LandingPage, MintRedeem } from './pages'
 import { Header } from './components'
 
 function App() {
@@ -9,6 +9,7 @@ function App() {
         <Header />
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/mint" element={<MintRedeem />} />
         </Routes>
       </div>
     </Router>
