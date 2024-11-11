@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Auction, Borrow, LandingPage, Lend, MintRedeem } from './pages'
+import { Auction, LandingPage, Mint, Redeem, } from './pages'
 import { Header } from './components'
 import { RoutesEnum } from './shared/enums/routes.enum'
 
@@ -10,7 +10,8 @@ function App() {
         <Header />
         <Routes>
           <Route path={RoutesEnum.Landing} element={<LandingPage />} />
-          <Route path={RoutesEnum.MintRedeem} element={<MintRedeem />} />
+          <Route path={RoutesEnum.Mint} element={<Mint />} />
+          <Route path={RoutesEnum.Redeem} element={<Redeem />} />
           <Route path={RoutesEnum.Auction} element={<Auction />} />
         </Routes>
       </div>
