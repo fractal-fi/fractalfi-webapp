@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 import { Bitcoin, DollarSign, Info, TrendingUp } from 'lucide-react'
-import { BackgroundPattern } from '@/components'
+import { BackgroundPattern, MiniHero } from '@/components'
 
 const MintRedeem: React.FC = () => {
   const redeemData = [
@@ -54,21 +54,7 @@ const MintRedeem: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
       <BackgroundPattern />
-      <motion.h1 
-        className="text-5xl md:text-6xl font-bold tracking-tighter font-['Montserrat',sans-serif] mb-4 text-center text-white bg-gradient-to-r from-[#f39800] to-[#f39800]/70 bg-clip-text text-transparent" 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        Mint & Redeem
-      </motion.h1>
-      <motion.div 
-        className="h-1 w-32 bg-gradient-to-r from-[#f39800] to-[#f39800]/70 mb-12 mx-auto rounded-full"
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
-      />
-
+      <MiniHero title='Mint & Redeem'/>
       <div className="flex flex-col md:flex-row gap-8">
         {/* Left column: General information */}
         <div className="md:w-1/3 space-y-6">
