@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 import { Wallet, LogOut } from 'lucide-react'
+import { RoutesEnum } from '@/shared/enums/routes.enum'
 
 const Header: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false)
@@ -20,15 +21,15 @@ const Header: React.FC = () => {
   }
 
   const menuItems = [
-    { name: 'Mint', path: '/mint' },
-    { name: 'Borrow', path: '/borrow' },
-    { name: 'Lending', path: '/lend' },
-    { name: 'Auctions', path: '/auctions' }
+    { name: 'Mint', path: RoutesEnum.MintRedeem },
+    { name: 'Borrow', path: RoutesEnum.Borrow },
+    { name: 'Lending', path: RoutesEnum.Lend },
+    { name: 'Auctions', path: RoutesEnum.Auction }
   ]
 
   return (
     <header className="container mx-auto px-4 py-6 flex items-center z-10">
-      <Link to="/" className="text-2xl font-bold text-[#f39800] mr-8">
+      <Link to={RoutesEnum.Landing} className="text-2xl font-bold text-[#f39800] mr-8">
         FractalFi
       </Link>
       <nav className="flex-1 flex justify-center space-x-6">
