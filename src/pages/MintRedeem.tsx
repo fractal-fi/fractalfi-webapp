@@ -7,12 +7,23 @@ import { cn } from "@/lib/utils"
 import { Bitcoin, DollarSign } from 'lucide-react'
 
 const MintRedeem: React.FC = () => {
+  /*
+    mock data
+  */
+  const redeemData = [
+    { ticket: "a1b2c3d4e5", redeemableBtc: 0.5, requiredFUsd: 15000 },
+    { ticket: "f6g7h8i9j0", redeemableBtc: 0.75, requiredFUsd: 22500 },
+    { ticket: "k1l2m3n4o5", redeemableBtc: 1.0, requiredFUsd: 30000 },
+    { ticket: "p6q7r8s9t0", redeemableBtc: 0.25, requiredFUsd: 7500 },
+  ]
+      
   const [btcAmount, setBtcAmount] = useState(0.0001)
   const [fUsdAmount, setFUsdAmount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-  const [exchangeRate, setExchangeRate] = useState(85000)
-  const maxBtcBalance = 1
-  const collateralizationRatio = 0.9
+  const [exchangeRate, setExchangeRate] = useState(85000) // mock
+  const maxBtcBalance = 1 // mock
+  const collateralizationRatio = 0.9 
+  const userFUsdBalance = 50000 // mock
 
   useEffect(() => {
     const fetchExchangeRate = async () => {
@@ -26,6 +37,10 @@ const MintRedeem: React.FC = () => {
     const amount = parseFloat(event.target.value)
     setBtcAmount(amount)
     setFUsdAmount(amount * collateralizationRatio * exchangeRate)
+  }
+
+  const handleRedeem = (ticket: string) => {
+    alert(`Redeeming BTC for ticket ${ticket}`)
   }
 
   const handleMint = async () => {
@@ -149,10 +164,54 @@ const MintRedeem: React.FC = () => {
             </Button>
           </motion.div>
         </TabsContent>
-        <TabsContent value="redeem" className="bg-gray-900/70 backdrop-blur-md p-8 rounded-b-xl shadow-2xl">
-          <div className="space-y-6">
-            <p className="text-gray-300 text-lg">Redeem functionality coming soon...</p>
-          </div>
+        <TabsContent value="redeem" className="bg-gray-900/70 backdrop-blur-md p-6 rounded-b-xl shadow-2xl">
+        <motion.div
+            className="space-y-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-semibold text-white">Your fUSD Balance</h3>
+              <p className="text-3xl font-bold text-[#f39800] flex items-center">
+                <DollarSign className="mr-2" />
+                {userFUsdBalance.toLocaleString()} fUSD
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left text-gray-300">
+                <thead className="text-xs uppercase bg-gray-800/50 text-gray-400">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 rounded-tl-lg">Ticket #</th>
+                    <th scope="col" className="px-6 py-3">Redeemable BTC</th>
+                    <th scope="col" className="px-6 py-3">Required fUSD</th>
+                    <th scope="col" className="px-6 py-3 rounded-tr-lg">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {redeemData.map((item, index) => (
+                    <tr key={item.ticket} className="bg-gray-800/50 border-b border-gray-700">
+                      <td className="px-6 py-4 font-medium text-[#f39800] whitespace-nowrap">
+                        <a href={`https://ordinals.com/${item.ticket}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                          {item.ticket}
+                        </a>
+                      </td>
+                      <td className="px-6 py-4">{item.redeemableBtc} BTC</td>
+                      <td className="px-6 py-4">{item.requiredFUsd.toLocaleString()} fUSD</td>
+                      <td className="px-6 py-4">
+                        <Button
+                          onClick={() => handleRedeem(item.ticket)}
+                          className="w-full bg-gradient-to-r from-[#f39800] to-[#f39800]/80 hover:from-[#f39800]/90 hover:to-[#f39800]/70 text-black font-semibold py-2 px-4 rounded transition-all duration-300 transform hover:scale-105"
+                        >
+                          Redeem BTC
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
         </TabsContent>
       </Tabs>
     </div>
