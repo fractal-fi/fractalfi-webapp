@@ -21,7 +21,8 @@ const Header: React.FC = () => {
   }
 
   const menuItems = [
-    { name: 'Mint', path: RoutesEnum.MintRedeem },
+    { name: 'Mint', path: RoutesEnum.Mint },
+    { name: 'Redeem', path: RoutesEnum.Redeem },
     { name: 'Auctions', path: RoutesEnum.Auction }
   ]
 

@@ -1,8 +1,11 @@
 import LandingPage from "./LandingPage";
-import MintRedeem from "./MintRedeem";
 import Auction from "./Auction";
+import Mint from "./Mint";
+import Redeem from "./Redeem";
+
 export {
     LandingPage,
-    MintRedeem,
-    Auction
+    Auction,
+    Mint,
+    Redeem
 }
