@@ -1,23 +1,36 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 import { Wallet, LogOut } from 'lucide-react'
 import { RoutesEnum } from '@/shared/enums/routes.enum'
+import { useWallet } from '@/providers/WalletProvider'
 
 const Header: React.FC = () => {
   const [isConnected, setIsConnected] = useState(false)
   const [bitcoinAddress, setBitcoinAddress] = useState('')
+  const { wallet }  = useWallet();
 
-  const handleConnect = () => {
-    // Simulating wallet connection
-    setIsConnected(true)
-    setBitcoinAddress('bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh')
+  const disconnect = async() => {
+    await wallet.disconnect();
+  }
+  
+  
+  const handleConnect = async() => {
+    try {
+        await wallet.requestAccounts();
+        const accounts = await wallet.getAccounts();
+        setIsConnected(true)
+        setBitcoinAddress(accounts[0])
+    } catch (e) {
+        alert('error connecting with unisat');
+    }
   }
 
   const handleDisconnect = () => {
     setIsConnected(false)
     setBitcoinAddress('')
+    disconnect();
   }
 
   const menuItems = [

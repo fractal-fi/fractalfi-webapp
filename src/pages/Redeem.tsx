@@ -3,11 +3,27 @@ import { motion } from 'framer-motion'
 import { Button } from "@/components/ui/button"
 import { Bitcoin, DollarSign, TrendingUp } from 'lucide-react'
 import { BackgroundPattern } from '@/components'
+import { useAPIClient } from '@/providers/APIClientProvider'
+import { useWallet } from '@/providers/WalletProvider'
+
+interface BalanceInfo {
+  availableBalance: string;
+  transferableBalance: string;
+}
+
+interface Balances {
+  btc: BalanceInfo;
+  fusd: BalanceInfo;
+}
 
 const Redeem: React.FC = () => {
+  const { wallet } = useWallet()
+  const client = useAPIClient()
   const [exchangeRate, setExchangeRate] = useState(85000) // mock
-  const maxBtcBalance = 1 // mock
-  const userFUsdBalance = 50000 // mock
+  const [balances, setBalances] = useState<Balances>({
+    btc: { availableBalance: "0", transferableBalance: "0" },
+    fusd: { availableBalance: "0", transferableBalance: "0" }
+  })
 
   const redeemData = [
     { ticket: "a1b2c3d4e5", redeemableBtc: 0.5, requiredFUsd: 15000 },
@@ -15,6 +31,24 @@ const Redeem: React.FC = () => {
     { ticket: "k1l2m3n4o5", redeemableBtc: 1.0, requiredFUsd: 30000 },
     { ticket: "p6q7r8s9t0", redeemableBtc: 0.25, requiredFUsd: 7500 },
   ]
+
+  useEffect(() => {
+    const fetchBalances = async () => {
+      try {
+        if (!wallet) return 0;
+        const address = await wallet.getAccounts();
+        const addressSummary = await client.getAddressSummary(address[0])
+        setBalances({
+          btc: addressSummary['test_BTC4'],
+          fusd: addressSummary['test_FUSD']
+        })
+      } catch (error) {
+        console.error('Failed to fetch balances:', error)
+      }
+    }
+
+    fetchBalances()
+  }, [client, wallet])
 
   useEffect(() => {
     const fetchExchangeRate = async () => {
@@ -58,19 +92,33 @@ const Redeem: React.FC = () => {
             >
               <h3 className="text-2xl font-semibold text-white mb-6">Your Balances</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Bitcoin className="text-[#f39800] h-8 w-8" />
-                    <span className="text-lg text-gray-300">Bitcoin</span>
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Bitcoin className="text-[#f39800] h-6 w-6" />
+                    <span className="text-sm text-gray-300">Total BTC</span>
                   </div>
-                  <span className="text-2xl font-bold text-white">{maxBtcBalance} BTC</span>
+                  <span className="text-lg font-bold text-white block">{parseFloat(balances.btc.availableBalance).toFixed(8)} BTC</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="text-[#f39800] h-8 w-8" />
-                    <span className="text-lg text-gray-300">fUSD</span>
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Bitcoin className="text-[#f39800] h-6 w-6" />
+                    <span className="text-sm text-gray-300">Transferrable BTC</span>
                   </div>
-                  <span className="text-2xl font-bold text-white">{userFUsdBalance.toLocaleString()} fUSD</span>
+                  <span className="text-lg font-bold text-white block">{parseFloat(balances.btc.transferableBalance).toFixed(8)} BTC</span>
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <DollarSign className="text-[#f39800] h-6 w-6" />
+                    <span className="text-sm text-gray-300">Total fUSD</span>
+                  </div>
+                  <span className="text-lg font-bold text-white block">{parseFloat(balances.fusd.availableBalance).toFixed(2)} fUSD</span>
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <DollarSign className="text-[#f39800] h-6 w-6" />
+                    <span className="text-sm text-gray-300">Transferrable fUSD</span>
+                  </div>
+                  <span className="text-lg font-bold text-white block">{parseFloat(balances.fusd.transferableBalance).toFixed(2)} fUSD</span>
                 </div>
               </div>
             </motion.div>
@@ -81,14 +129,13 @@ const Redeem: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <h3 className="text-2xl font-semibold text-white mb-4">Exchange Rate</h3>
               <div className="flex items-center space-x-4">
                 <div className="bg-[#f39800]/20 p-3 rounded-full">
                   <TrendingUp className="text-[#f39800] h-8 w-8" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Current Rate</p>
-                  <p className="text-3xl font-bold text-white">1 BTC = ${exchangeRate.toLocaleString()} USD</p>
+                  <p className="text-sm text-gray-400">Market Rate</p>
+                  <p className="text-xl font-bold text-white">1 BTC = ${exchangeRate.toLocaleString()} USD</p>
                 </div>
               </div>
               <motion.div 
@@ -127,7 +174,7 @@ const Redeem: React.FC = () => {
                               {item.ticket}
                             </a>
                           </td>
-                          <td className="px-6 py-4">{item.redeemableBtc} BTC</td>
+                          <td className="px-6 py-4">{item.redeemableBtc.toFixed(8)} BTC</td>
                           <td className="px-6 py-4">{item.requiredFUsd.toLocaleString()} fUSD</td>
                           <td className="px-6 py-4">
                             <Button

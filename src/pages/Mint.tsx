@@ -6,15 +6,51 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 import { Bitcoin, DollarSign, Info, TrendingUp } from 'lucide-react'
 import { BackgroundPattern } from '@/components'
+import { useAPIClient } from '@/providers/APIClientProvider'
+import { useWallet } from '@/providers/WalletProvider'
+
+interface BalanceInfo {
+  availableBalance: string;
+  transferableBalance: string;
+}
+
+interface Balances {
+  btc: BalanceInfo;
+  fusd: BalanceInfo;
+}
 
 const Mint: React.FC = () => {
+  const client = useAPIClient()
+  const { wallet } = useWallet()
+
   const [btcAmount, setBtcAmount] = useState(0.0001)
   const [fUsdAmount, setFUsdAmount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
+
   const [exchangeRate, setExchangeRate] = useState(85000) // mock
-  const maxBtcBalance = 1 // mock
+  const [balances, setBalances] = useState<Balances>({
+    btc: { availableBalance: "0", transferableBalance: "0" },
+    fusd: { availableBalance: "0", transferableBalance: "0" }
+  })
   const collateralizationRatio = 0.9 
-  const userFUsdBalance = 50000 // mock
+
+  useEffect(() => {
+    const fetchBalances = async () => {
+      try {
+        if (!wallet) return 0;
+        const address = await wallet.getAccounts();
+        const addressSummary = await client.getAddressSummary(address[0])
+        setBalances({
+          btc: addressSummary['test_BTC4'],
+          fusd: addressSummary['test_FUSD']
+        })
+      } catch (error) {
+        console.error('Failed to fetch balances:', error)
+      }
+    }
+
+    fetchBalances()
+  }, [client, wallet])
 
   useEffect(() => {
     const fetchExchangeRate = async () => {
@@ -40,7 +76,8 @@ const Mint: React.FC = () => {
     alert(`Minted ${fUsdAmount.toFixed(2)} fUSD`)
   }
 
-  const isValidAmount = btcAmount >= 0.0001 && btcAmount <= maxBtcBalance
+  const maxMintableBtc = parseFloat(balances.btc.availableBalance) - parseFloat(balances.btc.transferableBalance)
+  const isValidAmount = btcAmount >= 0.0001 && btcAmount <= maxMintableBtc
 
   return (
     <>
@@ -72,19 +109,33 @@ const Mint: React.FC = () => {
             >
               <h3 className="text-2xl font-semibold text-white mb-6">Your Balances</h3>
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Bitcoin className="text-[#f39800] h-8 w-8" />
-                    <span className="text-lg text-gray-300">Bitcoin</span>
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Bitcoin className="text-[#f39800] h-6 w-6" />
+                    <span className="text-sm text-gray-300">Total BTC</span>
                   </div>
-                  <span className="text-2xl font-bold text-white">{maxBtcBalance} BTC</span>
+                  <span className="text-lg font-bold text-white block">{parseFloat(balances.btc.availableBalance).toFixed(8)} BTC</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="text-[#f39800] h-8 w-8" />
-                    <span className="text-lg text-gray-300">fUSD</span>
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Bitcoin className="text-[#f39800] h-6 w-6" />
+                    <span className="text-sm text-gray-300">Transferrable BTC</span>
                   </div>
-                  <span className="text-2xl font-bold text-white">{userFUsdBalance.toLocaleString()} fUSD</span>
+                  <span className="text-lg font-bold text-white block">{parseFloat(balances.btc.transferableBalance).toFixed(8)} BTC</span>
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <DollarSign className="text-[#f39800] h-6 w-6" />
+                    <span className="text-sm text-gray-300">Total fUSD</span>
+                  </div>
+                  <span className="text-lg font-bold text-white block">{parseFloat(balances.fusd.availableBalance).toFixed(2)} fUSD</span>
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <DollarSign className="text-[#f39800] h-6 w-6" />
+                    <span className="text-sm text-gray-300">Transferrable fUSD</span>
+                  </div>
+                  <span className="text-lg font-bold text-white block">{parseFloat(balances.fusd.transferableBalance).toFixed(2)} fUSD</span>
                 </div>
               </div>
             </motion.div>
@@ -95,14 +146,13 @@ const Mint: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <h3 className="text-2xl font-semibold text-white mb-4">Exchange Rate</h3>
-              <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-4">
                 <div className="bg-[#f39800]/20 p-3 rounded-full">
                   <TrendingUp className="text-[#f39800] h-8 w-8" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Current Rate</p>
-                  <p className="text-3xl font-bold text-white">1 BTC = ${exchangeRate.toLocaleString()} USD</p>
+                  <p className="text-sm text-gray-400">Market Rate</p>
+                  <p className="text-xl font-bold text-white">1 BTC = ${exchangeRate.toLocaleString()} USD</p>
                 </div>
               </div>
               <motion.div 
@@ -128,13 +178,13 @@ const Mint: React.FC = () => {
                   <input
                     type="range"
                     min={0.0001}
-                    max={maxBtcBalance}
+                    max={maxMintableBtc}
                     step={0.0001}
                     value={btcAmount}
                     onChange={handleBtcChange}
                     className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer mb-4 custom-slider"
                     style={{
-                      background: `linear-gradient(to right, #f39800 0%, #f39800 ${(btcAmount / maxBtcBalance) * 100}%, #4B5563 ${(btcAmount / maxBtcBalance) * 100}%, #4B5563 100%)`
+                      background: `linear-gradient(to right, #f39800 0%, #f39800 ${(btcAmount / maxMintableBtc) * 100}%, #4B5563 ${(btcAmount / maxMintableBtc) * 100}%, #4B5563 100%)`
                     }}
                   />
                   <Input
@@ -142,7 +192,7 @@ const Mint: React.FC = () => {
                     value={btcAmount}
                     onChange={handleBtcChange}
                     min={0.0001}
-                    max={maxBtcBalance}
+                    max={maxMintableBtc}
                     step={0.0001}
                     className={cn(
                       "bg-gray-800/50 text-white border-gray-600 text-lg",
@@ -157,7 +207,7 @@ const Mint: React.FC = () => {
                         exit={{ opacity: 0, y: -10 }}
                         className="text-red-500 text-sm mt-2"
                       >
-                        Please enter an amount between 0.0001 and {maxBtcBalance} BTC
+                        Please enter an amount between 0.0001 and {maxMintableBtc.toFixed(8)} BTC
                       </motion.p>
                     )}
                   </AnimatePresence>
