@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
-import { Bitcoin, DollarSign, Info, TrendingUp } from 'lucide-react'
+import { Bitcoin, DollarSign, Info } from 'lucide-react'
 import { BackgroundPattern } from '@/components'
 import { useAPIClient } from '@/providers/APIClientProvider'
+import BalancesCard from '@/components/BalancesCard'
+import ExchangeRateCard from '@/components/ExchangeRatesCard'
 import { useWallet } from '@/providers/WalletProvider'
 
 interface BalanceInfo {
@@ -21,12 +23,10 @@ interface Balances {
 
 const Mint: React.FC = () => {
   const client = useAPIClient()
-  const { wallet } = useWallet()
-
+  const { wallet } = useWallet();
   const [btcAmount, setBtcAmount] = useState(0.0001)
   const [fUsdAmount, setFUsdAmount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-
   const [exchangeRate, setExchangeRate] = useState(85000) // mock
   const [balances, setBalances] = useState<Balances>({
     btc: { availableBalance: "0", transferableBalance: "0" },
@@ -35,11 +35,13 @@ const Mint: React.FC = () => {
   const collateralizationRatio = 0.9 
 
   useEffect(() => {
+    
     const fetchBalances = async () => {
       try {
-        if (!wallet) return 0;
-        const address = await wallet.getAccounts();
-        const addressSummary = await client.getAddressSummary(address[0])
+        if (!wallet) return;
+        const addresses = await wallet.getAccounts();
+        const address = addresses[0];
+        const addressSummary = await client.getAddressSummary(address)
         setBalances({
           btc: addressSummary['test_BTC4'],
           fusd: addressSummary['test_FUSD']
@@ -99,72 +101,11 @@ const Mint: React.FC = () => {
         />
 
         <div className="flex flex-col md:flex-row gap-8 bg-gray-900/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl relative z-10">
-          {/* Left column: General information */}
           <div className="md:w-1/3 space-y-6">
-            <motion.div 
-              className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h3 className="text-2xl font-semibold text-white mb-6">Your Balances</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center space-x-2 mb-1">
-                    <Bitcoin className="text-[#f39800] h-6 w-6" />
-                    <span className="text-sm text-gray-300">Total BTC</span>
-                  </div>
-                  <span className="text-lg font-bold text-white block">{parseFloat(balances.btc.availableBalance).toFixed(8)} BTC</span>
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2 mb-1">
-                    <Bitcoin className="text-[#f39800] h-6 w-6" />
-                    <span className="text-sm text-gray-300">Transferrable BTC</span>
-                  </div>
-                  <span className="text-lg font-bold text-white block">{parseFloat(balances.btc.transferableBalance).toFixed(8)} BTC</span>
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2 mb-1">
-                    <DollarSign className="text-[#f39800] h-6 w-6" />
-                    <span className="text-sm text-gray-300">Total fUSD</span>
-                  </div>
-                  <span className="text-lg font-bold text-white block">{parseFloat(balances.fusd.availableBalance).toFixed(2)} fUSD</span>
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2 mb-1">
-                    <DollarSign className="text-[#f39800] h-6 w-6" />
-                    <span className="text-sm text-gray-300">Transferrable fUSD</span>
-                  </div>
-                  <span className="text-lg font-bold text-white block">{parseFloat(balances.fusd.transferableBalance).toFixed(2)} fUSD</span>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 overflow-hidden relative group"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-                            <div className="flex items-center space-x-4">
-                <div className="bg-[#f39800]/20 p-3 rounded-full">
-                  <TrendingUp className="text-[#f39800] h-8 w-8" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Market Rate</p>
-                  <p className="text-xl font-bold text-white">1 BTC = ${exchangeRate.toLocaleString()} USD</p>
-                </div>
-              </div>
-              <motion.div 
-                className="absolute inset-0 bg-gradient-to-r from-[#f39800]/0 via-[#f39800]/30 to-[#f39800]/0"
-                initial={{ x: '-100%' }}
-                animate={{ x: '100%' }}
-                transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
-              />
-            </motion.div>
+            <BalancesCard balances={balances} />
+            <ExchangeRateCard exchangeRate={exchangeRate} />
           </div>
 
-          {/* Right column: Mint form */}
           <div className="md:w-2/3">
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700">
               <motion.div 
