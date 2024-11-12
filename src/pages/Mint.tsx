@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import { Bitcoin, DollarSign, Info } from 'lucide-react'
+import { Bitcoin, DollarSign, Info, Plus } from 'lucide-react'
 import { BackgroundPattern } from '@/components'
 import { useAPIClient } from '@/providers/APIClientProvider'
 import BalancesCard from '@/components/BalancesCard'
@@ -21,21 +23,29 @@ interface Balances {
   fusd: BalanceInfo;
 }
 
+interface TransferBlock {
+  inscriptionId: string;
+  amt: string;
+}
+
 const Mint: React.FC = () => {
   const client = useAPIClient()
   const { wallet } = useWallet();
-  const [btcAmount, setBtcAmount] = useState(0.0001)
   const [fUsdAmount, setFUsdAmount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
-  const [exchangeRate, setExchangeRate] = useState(85000) // mock
+  const [exchangeRate, setExchangeRate] = useState(0) 
   const [balances, setBalances] = useState<Balances>({
     btc: { availableBalance: "0", transferableBalance: "0" },
     fusd: { availableBalance: "0", transferableBalance: "0" }
   })
-  const collateralizationRatio = 0.9 
+  const [btcTransferBlocks, setBTCTransferBlocks] = useState<TransferBlock[]>([]);
+  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
+  const [isCreateBlockModalOpen, setIsCreateBlockModalOpen] = useState(false);
+  const [newBlockAmount, setNewBlockAmount] = useState(0.0001);
+
+  const collateralizationRatio = 0.8
 
   useEffect(() => {
-    
     const fetchBalances = async () => {
       try {
         if (!wallet) return;
@@ -56,30 +66,67 @@ const Mint: React.FC = () => {
 
   useEffect(() => {
     const fetchExchangeRate = async () => {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setExchangeRate(85000)
+      const exchangeRate = await client.getBitcoinPrice();
+      setExchangeRate(exchangeRate.price)
     }
     fetchExchangeRate()
-  }, [])
+  }, []);
+
+  const fetchBlocks = async() => {
+    const accs = await wallet.getAccounts();
+    client.getTransferBlocksByTicker(accs[0], 'test_BTC4').then(data => {
+      setBTCTransferBlocks(data.map(block => ({
+        inscriptionId: block.inscriptionId,
+        amt: block.data.amt
+      })));
+    });
+  }
 
   useEffect(() => {
-    setFUsdAmount(btcAmount * collateralizationRatio * exchangeRate)
-  }, [btcAmount, exchangeRate])
+    if (!wallet) return;
+    fetchBlocks();
+  }, [wallet]);
 
-  const handleBtcChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const amount = parseFloat(event.target.value)
-    setBtcAmount(amount)
-  }
+  useEffect(() => {
+    const selectedBlockData = btcTransferBlocks.find(block => block.inscriptionId === selectedBlock);
+    if (selectedBlockData) {
+      const btcAmount = parseFloat(selectedBlockData.amt);
+      setFUsdAmount(btcAmount * collateralizationRatio * exchangeRate);
+    } else {
+      setFUsdAmount(0);
+    }
+  }, [selectedBlock, btcTransferBlocks, collateralizationRatio, exchangeRate]);
 
   const handleMint = async () => {
-    setIsLoading(true)
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    setIsLoading(false)
-    alert(`Minted ${fUsdAmount.toFixed(2)} fUSD`)
+    if (!selectedBlock) return;
+    setIsLoading(true);
+    try {
+      const message = `Locking inscription in the vault. Inscription ID: ${selectedBlock}`;
+      const signature = await wallet.signMessage(message);
+      console.log(signature);
+      await wallet.sendInscription('bc1qvrlhhvs6xvw68lc9r8sagn9l2pgr0fsffpf5vv', selectedBlock, {
+        feeRate: 1,
+      });
+    } catch (error) {
+      console.error('Failed to mint:', error);
+      alert('Failed to mint. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateBlock = async () => {
+    await wallet.inscribeTransfer('test_BTC4', newBlockAmount.toFixed(8));
+    setIsCreateBlockModalOpen(false);
   }
 
+  const isValidAmount = selectedBlock !== null;
+
   const maxMintableBtc = parseFloat(balances.btc.availableBalance) - parseFloat(balances.btc.transferableBalance)
-  const isValidAmount = btcAmount >= 0.0001 && btcAmount <= maxMintableBtc
+
+  if (!wallet) {
+    return <>Please Connect Wallet</>
+  }
 
   return (
     <>
@@ -115,43 +162,60 @@ const Mint: React.FC = () => {
                 transition={{ duration: 0.5 }}
               >
                 <div>
-                  <h3 className="text-xl font-semibold mb-4 text-white">You Spend (BTC)</h3>
-                  <input
-                    type="range"
-                    min={0.0001}
-                    max={maxMintableBtc}
-                    step={0.0001}
-                    value={btcAmount}
-                    onChange={handleBtcChange}
-                    className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer mb-4 custom-slider"
-                    style={{
-                      background: `linear-gradient(to right, #f39800 0%, #f39800 ${(btcAmount / maxMintableBtc) * 100}%, #4B5563 ${(btcAmount / maxMintableBtc) * 100}%, #4B5563 100%)`
-                    }}
-                  />
-                  <Input
-                    type="number"
-                    value={btcAmount}
-                    onChange={handleBtcChange}
-                    min={0.0001}
-                    max={maxMintableBtc}
-                    step={0.0001}
-                    className={cn(
-                      "bg-gray-800/50 text-white border-gray-600 text-lg",
-                      !isValidAmount && "border-red-500"
-                    )}
-                  />
-                  <AnimatePresence>
-                    {!isValidAmount && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="text-red-500 text-sm mt-2"
-                      >
-                        Please enter an amount between 0.0001 and {maxMintableBtc.toFixed(8)} BTC
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
+                  <h3 className="text-xl font-semibold mb-4 text-white">Select Transfer Block (BTC)</h3>
+                  <div className="flex space-x-4">
+                    <Select onValueChange={setSelectedBlock}>
+                      <SelectTrigger className="w-full bg-gray-800 text-white border-gray-600">
+                        <SelectValue placeholder="Select a transfer block" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 text-white border-gray-600">
+                        {btcTransferBlocks.map((block) => (
+                          <SelectItem key={block.inscriptionId} value={block.inscriptionId} className="hover:bg-gray-700">
+                            {block.amt} BTC
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Dialog open={isCreateBlockModalOpen} onOpenChange={setIsCreateBlockModalOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="flex-shrink-0 bg-gray-800 text-white border-gray-600 hover:bg-gray-700">
+                          <Plus className="mr-2 h-4 w-4" /> Create New Block
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-gray-900 text-white border border-gray-700">
+                        <DialogHeader>
+                          <DialogTitle className="text-white">Create New Transfer Block</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <h3 className="text-xl font-semibold mb-2 text-white">BTC Amount</h3>
+                            <input
+                              type="range"
+                              min={0.0001}
+                              max={maxMintableBtc}
+                              step={0.0001}
+                              value={newBlockAmount}
+                              onChange={(e) => setNewBlockAmount(parseFloat(e.target.value))}
+                              className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer mb-4 custom-slider"
+                              style={{
+                                background: `linear-gradient(to right, #f39800 0%, #f39800 ${(newBlockAmount / maxMintableBtc) * 100}%, #4B5563 ${(newBlockAmount / maxMintableBtc) * 100}%, #4B5563 100%)`
+                              }}
+                            />
+                            <Input
+                              type="number"
+                              value={newBlockAmount}
+                              onChange={(e) => setNewBlockAmount(parseFloat(e.target.value))}
+                              min={0.0001}
+                              max={maxMintableBtc}
+                              step={0.0001}
+                              className="bg-gray-800 text-white border-gray-600 text-lg"
+                            />
+                          </div>
+                          <Button onClick={handleCreateBlock} className="bg-[#f39800] text-black hover:bg-[#f39800]/90">Create Transfer Block</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold mb-2 text-white">You'll Receive (fUSD)</h3>
@@ -165,7 +229,7 @@ const Mint: React.FC = () => {
                 <Button 
                   className="w-full bg-gradient-to-r from-[#f39800] to-[#f39800]/80 hover:from-[#f39800]/90 hover:to-[#f39800]/70 text-black text-lg font-semibold py-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
                   onClick={handleMint}
-                  disabled={!isValidAmount || isLoading}
+                  disabled={!selectedBlock || isLoading}
                 >
                   {isLoading ? (
                     <span className="flex items-center justify-center">

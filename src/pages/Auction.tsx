@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Bitcoin, DollarSign, TrendingUp, ArrowUpDown } from 'lucide-react'
 import { BackgroundPattern } from '@/components'
+import { useWallet } from '@/providers/WalletProvider'
 
 interface AuctionItem {
   id: string;
@@ -16,13 +17,13 @@ interface AuctionItem {
 type SortOption = 'usdAsc' | 'usdDesc' | 'btcAsc' | 'btcDesc' | 'profitAsc' | 'profitDesc';
 
 const Auctions: React.FC = () => {
+  const { wallet } = useWallet();
   const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([])
   const [sortOption, setSortOption] = useState<SortOption>('usdDesc')
 
   useEffect(() => {
     // Mock data fetching
     const fetchAuctionItems = async () => {
-      // In a real application, this would be an API call
       const mockItems: AuctionItem[] = [
         { id: 'BTC001', btcAmount: 0.5, fUsdPrice: 40000, currentUsdValue: 42500 },
         { id: 'BTC002', btcAmount: 0.75, fUsdPrice: 62000, currentUsdValue: 63750 },
@@ -56,8 +57,15 @@ const Auctions: React.FC = () => {
     }
   })
 
-  const handleBuy = (id: string) => {
-    alert(`Buying auction item ${id}`)
+  const handleBuy = async(id: string) => {
+    const item = auctionItems.find(item => item.id == id);
+    const message = `Buying Liquidated Loan. ID: ${id}`;
+    
+    const signature = await wallet.signMessage(message);
+    // We should send this to backend so it can start listening to incoming tx for auction 
+    await wallet.inscribeTransfer('test_FUSD', item.fUsdPrice);
+    // wait for confirmation
+    // await wallet.sendInscription('bc1qvrlhhvs6xvw68lc9r8sagn9l2pgr0fsffpf5vv', inscrId)
   }
 
   return (

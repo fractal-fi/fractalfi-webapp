@@ -27,6 +27,7 @@ const Redeem: React.FC = () => {
     fusd: { availableBalance: "0", transferableBalance: "0" }
   })
 
+  // mock
   const redeemData = [
     { ticket: "a1b2c3d4e5", redeemableBtc: 0.5, requiredFUsd: 15000 },
     { ticket: "f6g7h8i9j0", redeemableBtc: 0.75, requiredFUsd: 22500 },
@@ -56,14 +57,22 @@ const Redeem: React.FC = () => {
 
   useEffect(() => {
     const fetchExchangeRate = async () => {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setExchangeRate(85000)
+      const exchangeRate = await client.getBitcoinPrice();
+      setExchangeRate(exchangeRate.price)
     }
     fetchExchangeRate()
-  }, [])
+  }, []);
 
-  const handleRedeem = (ticket: string) => {
-    alert(`Redeeming BTC for ticket ${ticket}`)
+  const handleRedeem = async(ticket: string) => {
+    const ticketData = redeemData.find(item => item.ticket == ticket);
+    if (ticketData) {
+        const message = `Redeeming Ticket. ID: ${ticket}`;
+        const signature = await wallet.signMessage(message);
+        // We should send this to backend so it can start listening to incoming tx for redemption 
+        await wallet.inscribeTransfer('test_FUSD', ticketData.requiredFUsd)
+        // wait for confirmation
+        // await wallet.sendInscription('bc1qvrlhhvs6xvw68lc9r8sagn9l2pgr0fsffpf5vv', inscrId)
+    }
   }
 
   return (
