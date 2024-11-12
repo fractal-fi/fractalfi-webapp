@@ -1,50 +1,34 @@
-# React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# FractalFi
 
-Currently, two official plugins are available:
+**FractalFi** is a decentralized stablecoin platform designed for the **Fractal Bitcoin blockchain**, enabling users to mint fUSD, a Bitcoin-backed stablecoin, by locking BTC as collateral. Inspired by Ethereum’s DAI model, FractalFi brings stability and utility to Bitcoin by leveraging the **BRC20 protocol**. This approach makes FractalFi one of the first stablecoin projects on Bitcoin, uniquely designed for a non-EVM ecosystem.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Project Overview
 
-## Expanding the ESLint configuration
+With FractalFi, users can lock BTC to mint fUSD, which holds a stable value pegged to the dollar. Our platform is designed to be secure and accessible, allowing users to release their BTC by repaying the minted fUSD. Additionally, FractalFi implements an automated liquidation system to protect the protocol against sharp drops in BTC’s value. This brings DeFi potential to Bitcoin while maintaining Bitcoin’s native simplicity and security.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Key Features
 
-- Configure the top-level `parserOptions` property like this:
+-   **BRC20 Protocol-Based**: Unlike traditional EVM-based protocols, FractalFi leverages BRC20, providing a new layer of decentralized financial tools on the Bitcoin network.
+-   **Stability through Collateralization**: FractalFi’s model is anchored in over-collateralized BTC, ensuring that fUSD is securely backed.
+-   **Automated Auctions**: When BTC’s collateral value drops below a threshold, an auction system automatically triggers, selling the BTC collateral to cover the outstanding loan, ensuring protocol stability.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## User Flow
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+1.  **Collateral Locking**: Users send BTC (BRC20 token) to FractalFi’s vault, locking it as collateral.
+2.  **Minting fUSD**: Once collateral is locked, the backend verifies the transaction, and users receive fUSD along with a unique redemption ticket.
+3.  **Redemption Process**: To retrieve locked BTC, users send back the fUSD along with the redemption ticket.
+4.  **Collateral Liquidation**: If BTC’s value drops below a set threshold, an auction is triggered. This auction allows BTC to be sold at a discount to cover outstanding fUSD, protecting the platform’s stability.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Achievements
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+-   **User Interface (UI)**: Built a responsive, user-friendly interface for platform access, enabling seamless interaction with the vault and fUSD minting.
+-   **Unisat Wallet Integration**: Integrated Unisat Wallet on the frontend for straightforward BTC transactions, enhancing the user experience.
+-   **Backend and Unisat API Integration**: Leveraged Unisat APIs to fetch real-time balance and transaction history, ensuring accurate tracking of users' locked BTC and minted fUSD.
+-   **Custom Inscription Service**: Created a service for committing and revealing inscriptions (BTC20 transferblocks), which improves transparency and efficiency for BRC20 transfers on FractalFi.
+
+## What I Didn’t Achieve
+
+-   **Mock Data for Demo**: Due to time constraints, some parts of the demo rely on mock data.
+-   **Backend Integration**: I still need to fully integrate the backend with the frontend and implement a few API calls to retrieve all available data, essentially connecting the final dots.
+-   **Continued Development**: Despite the unfinished aspects, I plan to continue building FractalFi. It’s both a necessary tool for the Fractal ecosystem and an exciting project that leverages Bitcoin’s potential for stablecoins.
